@@ -5,7 +5,7 @@
 // of tags and view the images that are found.
 //
 // Allow users to click the images to see a larger version with more information.
-$(document).on('ready', function(){
+
     // Place your code here, inside the document ready handler.
 
     // Create a function called `searchImages()`. This function will handle the
@@ -44,6 +44,56 @@ $(document).on('ready', function(){
     // STRETCH GOAL: Add a "more info" popup using the technique shown on the
     // Bootstrap Modal documentation: http://getbootstrap.com/javascript/#modals-related-target
 
-
-
+$(document).on('ready', function(){
+	function searchImages(tags) {
+		var flickrAPI = "https://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?";
+		$.getJSON(flickrAPI, {
+			tags: tags,
+			tagmode: "any",
+			format: "json"
+		}).done(function(data) {
+			$('#images').empty();
+			$.each(data.items, function(i, item) {
+				var newListItem = $('<li>')
+				
+			//show info
+			 var newTitle = $('<p class="image-title">').html(item.title).appendTo(newListItem);
+       var newDate = $('<p class="image-date">').text(item.date_taken).appendTo(newListItem);
+       var newDescription = $('<p class="image-description">').html(item.description).appendTo(newListItem);
+       var newLink = $('<a>').attr('href', item.link).text('View on Flickr').appendTo(newListItem);
+				
+				//modal button
+			 var newButton = $("<button class='btn btn-sm btn-primary'>more info</button>").attr({
+          'data-title': item.title,
+          'data-toggle': "modal",
+          'data-target': "#infoModal",
+          'data-imgsrc': item.media.m,
+          'data-description': item.description,
+          'type': "button"
+        }).appendTo(newListItem);
+        newListItem.appendTo( "#images" );
+        if ( i === 15 ) {
+          return false;
+				}
+			});
+		});
+	}
+	//  search button 
+	$('button.search').on('click', function(event) {
+		event.preventDefault();
+		var searchInput = $(event.target.parentElement).find('input[name="searchText"]')[0];
+		searchImages(searchInput.value);
+	});
+	  $('#infoModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget); // trigger modal
+    var title = button.data('title');  // extract data
+    var imgSrc = button.data('imgsrc');
+    var imageDescription = button.data('description');
+			
+		var modal = $(this);
+    modal.find('.modal-title').html(title);
+    var modalBody = modal.find('.modal-body');
+    modalBody.empty();
+    var modalDescription = $("<p class='image-description'>").html(imageDescription).appendTo(modalBody);
+});
 });
